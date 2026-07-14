@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Investment Fund</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 850px;
+            margin: auto;
+            padding: 30px;
+            background: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        input {
+            padding: 10px;
+            width: 150px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Investment Fund (Sepolia)</h1>
+
+    <div class="card">
+
+        <button onclick="connect()">Connect Wallet</button>
+
+        <p>
+            Account:
+            <span id="account">Not Connected</span>
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Fund</h2>
+
+        <p>Total Invested:
+            <span id="totalInvested">0</span>
+            ETH
+        </p>
+
+        <p>Fund Balance:
+            <span id="balance">0</span>
+            ETH
+        </p>
+
+        <button onclick="loadFundInfo()">
+            Refresh
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Investor</h2>
+
+        <p>Invested:
+            <span id="invested">0</span>
+            ETH
+        </p>
+
+        <p>Pending Rewards:
+            <span id="pending">0</span>
+            ETH
+        </p>
+
+        <p>Claimed:
+            <span id="claimed">0</span>
+            ETH
+        </p>
+
+        <button onclick="loadInvestor()">
+            Refresh Investor
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Invest</h2>
+
+        <input id="investAmount" placeholder="ETH">
+
+        <button onclick="invest()">
+            Invest
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Claim Rewards</h2>
+
+        <button onclick="claim()">
+            Claim
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Owner</h2>
+
+        <input id="returnAmount" placeholder="ETH">
+
+        <button onclick="depositReturns()">
+            Deposit Returns
+        </button>
+
+    </div>
+
+    <script>
+
+        const CONTRACT_ADDRESS = "0x7C1F3B1d59F01DfE6F024D739daAca42251ef6F2";
+
+        const ABI = [
+
+            "function invest() payable",
+
+            "function depositReturns() payable",
+
+            "function claimRewards()",
+
+            "function pendingRewards(address) view returns(uint256)",
+
+            "function getInvestor(address) view returns(uint256 invested,uint256 pending,uint256 claimed)",
+
+            "function totalInvested() view returns(uint256)",
+
+            "function fundBalance() view returns(uint256)"
+
+        ];
+
+        let provider;
+        let signer;
+        let contract;
+        let account;
+
+        async function connect() {
+
+            if (!window.ethereum) {
+                alert("Install MetaMask");
+                return;
+            }
+            provider = new ethers.BrowserProvider(window.ethereum);
+
+            await provider.send("eth_requestAccounts", []);
+
+            signer = await provider.getSigner();
+
+            account = await signer.getAddress();
+
+            contract = new ethers.Contract(
+                CONTRACT_ADDRESS,
+                ABI,
+                signer
+            );
+
+            document.getElementById("account").innerHTML = account;
+
+            loadFundInfo();
+
+            loadInvestor();
+
+        }
+
+
+        async function loadFundInfo() {
+
+            if (!contract) return;
+
+            const total = await contract.totalInvested();
+
+            const balance = await contract.fundBalance();
+
+            document.getElementById("totalInvested").innerHTML =
+                ethers.formatEther(total);
+
+            document.getElementById("balance").innerHTML =
+                ethers.formatEther(balance);
+
+        }
+
+        async function loadInvestor() {
+
+            if (!contract) return;
+
+            const info = await contract.getInvestor(account);
+
+            document.getElementById("invested").innerHTML =
+                ethers.formatEther(info[0]);
+
+            document.getElementById("pending").innerHTML =
+                ethers.formatEther(info[1]);
+
+            document.getElementById("claimed").innerHTML =
+                ethers.formatEther(info[2]);
+
+        }
+
+        async function invest() {
+
+            const eth = document.getElementById("investAmount").value;
+
+            const tx = await contract.invest({
+
+                value: ethers.parseEther(eth)
+
+            });
+
+            await tx.wait();
+
+            alert("Investment Successful");
+
+            loadFundInfo();
+
+            loadInvestor();
+
+        }
+
+        async function claim() {
+
+            const tx = await contract.claimRewards();
+
+            await tx.wait();
+
+            alert("Rewards Claimed");
+
+            loadFundInfo();
+
+            loadInvestor();
+
+        }
+
+        async function depositReturns() {
+
+            const eth = document.getElementById("returnAmount").value;
+
+            const tx = await contract.depositReturns({
+
+                value: ethers.parseEther(eth)
+
+            });
+
+            await tx.wait();
+
+            alert("Returns Deposited");
+
+            loadFundInfo();
+
+            loadInvestor();
+
+        }
+
+    </script>
+
+</body>
+
+</html>
