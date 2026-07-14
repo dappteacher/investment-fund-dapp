@@ -104,7 +104,7 @@ const CONTRACT_ADDRESS = "0x7C1F3B1d59F01DfE6F024D739daAca42251ef6F2";
 inside
 
 ```
-docs/index.html
+index.html
 ```
 
 ---
@@ -117,63 +117,11 @@ Clone the repository:
 git clone https://github.com/dappteacher/investment-fund-dapp.git
 ```
 
-Open
-
-```
-index.html
-```
-
-using a local web server.
-
-Example:
-
-```bash
-python -m http.server
-```
-
-Then visit
-
-```
-http://localhost:8000/docs/
-```
-
 ---
 
-# Deploy on GitHub Pages
+You can run this project using this address:
 
-1. Push the repository to GitHub.
-
-2. Move the frontend into:
-
-```
-index.html
-```
-
-3. Open
-
-```
-Settings
-→ Pages
-```
-
-4. Configure:
-
-```
-Source:
-Deploy from branch
-
-Branch:
-main
-
-Folder:
-/docs
-```
-
-After a few minutes your DApp will be available at
-
-```
 https://dappteacher.github.io/investment-fund-dapp/
-```
 
 ---
 
